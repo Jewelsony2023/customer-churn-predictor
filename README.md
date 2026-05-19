@@ -31,17 +31,18 @@ customer-churn-predictor/
 ├── dashboard/
 │   └── churn_predictions.csv
 └── requirements.txt
-
 ## API Usage
 
-Start the server:
+**Live API:** https://customer-churn-predictor-v7r3.onrender.com/docs
+
+Start the server locally:
 ```bash
 uvicorn main:app --reload
 ```
 
 Make a prediction:
 ```bash
-curl -X POST "http://127.0.0.1:8000/predict" \
+curl -X POST "https://customer-churn-predictor-v7r3.onrender.com/predict" \
 -H "Content-Type: application/json" \
 -d '{
   "gender": 1,
