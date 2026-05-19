@@ -62,24 +62,22 @@ LOW_RISK_CUSTOMER = {
 class TestHealthCheck:
 
     def test_root_returns_200(self):
-        """API should be online and return 200"""
+        """Frontend should load successfully"""
         response = client.get("/")
         assert response.status_code == 200
 
-    def test_root_returns_correct_fields(self):
+    def test_health_endpoint_returns_correct_fields(self):
         """Health check should return status, model name and version"""
-        response = client.get("/")
+        response = client.get("/health")
         data = response.json()
         assert "status" in data
         assert "model" in data
         assert "version" in data
 
-    def test_root_status_is_online(self):
+    def test_health_status_is_online(self):
         """Status field should say online"""
-        response = client.get("/")
+        response = client.get("/health")
         assert response.json()["status"] == "online"
-
-
 # ─── 2. PREDICTION ENDPOINT TESTS ─────────────────────────────────────────────
 class TestPredictionEndpoint:
 

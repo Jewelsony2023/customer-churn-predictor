@@ -1,9 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import joblib
 import numpy as np
 import uvicorn
+import os
 
 # Load model and artifacts
 model = joblib.load("model/churn_model.pkl")
@@ -17,7 +20,7 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Allow all origins for now
+# Allow all origins
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -25,41 +28,48 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Define what a customer request looks like
-class Customer(BaseModel):
-    gender: int                  # 0 = Female, 1 = Male
-    SeniorCitizen: int           # 0 = No, 1 = Yes
-    Partner: int                 # 0 = No, 1 = Yes
-    Dependents: int              # 0 = No, 1 = Yes
-    tenure: int                  # months as customer
-    PhoneService: int            # 0 = No, 1 = Yes
-    MultipleLines: int           # 0 = No, 1 = Yes, 2 = No phone
-    InternetService: int         # 0 = DSL, 1 = Fiber, 2 = No
-    OnlineSecurity: int          # 0 = No, 1 = Yes, 2 = No internet
-    OnlineBackup: int            # 0 = No, 1 = Yes, 2 = No internet
-    DeviceProtection: int        # 0 = No, 1 = Yes, 2 = No internet
-    TechSupport: int             # 0 = No, 1 = Yes, 2 = No internet
-    StreamingTV: int             # 0 = No, 1 = Yes, 2 = No internet
-    StreamingMovies: int         # 0 = No, 1 = Yes, 2 = No internet
-    Contract: int                # 0 = Month-to-month, 1 = One year, 2 = Two year
-    PaperlessBilling: int        # 0 = No, 1 = Yes
-    PaymentMethod: int           # 0-3 = different payment methods
-    MonthlyCharges: float        # monthly bill amount
-    TotalCharges: float          # total amount paid
+# Serve frontend static files
+app.mount("/static", StaticFiles(directory="frontend"), name="static")
 
-# Health check endpoint
-@app.get("/")
-def root():
+# Define customer input schema
+class Customer(BaseModel):
+    gender: int
+    SeniorCitizen: int
+    Partner: int
+    Dependents: int
+    tenure: int
+    PhoneService: int
+    MultipleLines: int
+    InternetService: int
+    OnlineSecurity: int
+    OnlineBackup: int
+    DeviceProtection: int
+    TechSupport: int
+    StreamingTV: int
+    StreamingMovies: int
+    Contract: int
+    PaperlessBilling: int
+    PaymentMethod: int
+    MonthlyCharges: float
+    TotalCharges: float
+
+# Serve frontend at root
+@app.get("/", response_class=FileResponse)
+def serve_frontend():
+    return FileResponse("frontend/index.html")
+
+# Health check
+@app.get("/health")
+def health():
     return {
         "status": "online",
         "model": "XGBoost Churn Predictor",
         "version": "1.0.0"
     }
 
-# Main prediction endpoint
+# Prediction endpoint
 @app.post("/predict")
 def predict(customer: Customer):
-    # Convert input to array in correct feature order
     input_data = np.array([[
         customer.gender,
         customer.SeniorCitizen,
@@ -82,11 +92,9 @@ def predict(customer: Customer):
         customer.TotalCharges
     ]])
 
-    # Get churn probability
     churn_probability = model.predict_proba(input_data)[0][1]
     churn_predicted = int(churn_probability >= threshold)
 
-    # Assign risk segment
     if churn_probability < 0.3:
         risk_segment = "Low Risk"
     elif churn_probability < 0.6:
@@ -102,4 +110,5 @@ def predict(customer: Customer):
     }
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)
