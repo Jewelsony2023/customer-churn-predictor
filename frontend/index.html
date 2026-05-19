@@ -1,494 +1,871 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Customer Churn Predictor</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg-primary: #080b14;
+      --bg-card: #0e1220;
+      --bg-input: #080b14;
+      --border: #1e2540;
+      --border-focus: #4f8ef7;
+      --text-primary: #f0f2f8;
+      --text-secondary: #8892b0;
+      --text-muted: #4a5578;
+      --accent-blue: #4f8ef7;
+      --accent-purple: #a855f7;
+      --high: #ef4444;
+      --high-bg: rgba(239,68,68,0.08);
+      --high-border: rgba(239,68,68,0.25);
+      --medium: #f59e0b;
+      --medium-bg: rgba(245,158,11,0.08);
+      --medium-border: rgba(245,158,11,0.25);
+      --low: #22c55e;
+      --low-bg: rgba(34,197,94,0.08);
+      --low-border: rgba(34,197,94,0.25);
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
 
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #0f1117;
-      color: #e0e0e0;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
       min-height: 100vh;
+      line-height: 1.5;
     }
 
+    /* ── HEADER ── */
     header {
-      background: #1a1d27;
-      border-bottom: 1px solid #2a2d3e;
-      padding: 20px 40px;
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      padding: 0 40px;
+      height: 64px;
       display: flex;
       align-items: center;
-      gap: 16px;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(12px);
     }
 
-    header .logo {
-      width: 40px; height: 40px;
-      background: linear-gradient(135deg, #4f8ef7, #a855f7);
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo {
+      width: 38px; height: 38px;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
       border-radius: 10px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 20px;
+      font-size: 18px;
+      flex-shrink: 0;
     }
 
-    header h1 {
-      font-size: 20px;
-      font-weight: 600;
-      color: #ffffff;
+    .header-title { font-size: 16px; font-weight: 600; color: var(--text-primary); }
+    .header-sub   { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(34,197,94,0.1);
+      border: 1px solid rgba(34,197,94,0.2);
+      border-radius: 20px;
+      padding: 5px 12px;
+      font-size: 12px;
+      color: var(--low);
     }
 
-    header p {
-      font-size: 13px;
-      color: #888;
-      margin-top: 2px;
+    .status-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--low);
+      animation: pulse 2s infinite;
     }
 
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* ── LAYOUT ── */
     .container {
-      max-width: 1100px;
-      margin: 40px auto;
+      max-width: 1200px;
+      margin: 32px auto;
       padding: 0 24px;
       display: grid;
-      grid-template-columns: 1fr 380px;
-      gap: 28px;
+      grid-template-columns: 1fr 400px;
+      gap: 24px;
+      align-items: start;
     }
 
+    /* ── CARDS ── */
     .card {
-      background: #1a1d27;
-      border: 1px solid #2a2d3e;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
       border-radius: 16px;
       padding: 28px;
     }
 
-    .card h2 {
-      font-size: 16px;
+    .card-title {
+      font-size: 14px;
       font-weight: 600;
-      color: #ffffff;
+      color: var(--text-primary);
       margin-bottom: 24px;
-      padding-bottom: 14px;
-      border-bottom: 1px solid #2a2d3e;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-title span { color: var(--text-muted); font-weight: 400; font-size: 12px; }
+
+    /* ── SECTIONS ── */
+    .section {
+      margin-bottom: 24px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
     }
 
     .section-label {
       font-size: 11px;
-      font-weight: 600;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 1px;
-      color: #4f8ef7;
-      margin: 20px 0 12px;
+      letter-spacing: 1.2px;
+      color: var(--accent-blue);
     }
 
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    .section-line {
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
 
+    /* ── GRID ── */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+
+    /* ── FIELDS ── */
     .field { display: flex; flex-direction: column; gap: 6px; }
 
-    label {
+    .field label {
       font-size: 12px;
-      color: #888;
+      color: var(--text-secondary);
       font-weight: 500;
     }
 
-    select, input {
-      background: #0f1117;
-      border: 1px solid #2a2d3e;
-      border-radius: 8px;
-      color: #e0e0e0;
-      padding: 10px 12px;
+    .field label .required { color: var(--high); margin-left: 2px; }
+
+    select, input[type="number"] {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      padding: 9px 12px;
       font-size: 13px;
       font-family: inherit;
-      transition: border-color 0.2s;
+      transition: border-color 0.15s, box-shadow 0.15s;
       width: 100%;
+      appearance: none;
+      -webkit-appearance: none;
     }
 
-    select:focus, input:focus {
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238892b0' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      padding-right: 30px;
+    }
+
+    select:focus, input[type="number"]:focus {
       outline: none;
-      border-color: #4f8ef7;
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 3px rgba(79,142,247,0.12);
     }
 
-    select option { background: #1a1d27; }
+    select.error, input.error {
+      border-color: var(--high);
+      box-shadow: 0 0 0 3px rgba(239,68,68,0.1);
+    }
 
+    select option { background: #0e1220; }
+
+    .field-error {
+      font-size: 11px;
+      color: var(--high);
+      display: none;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .field-error.visible { display: flex; }
+
+    /* ── BUTTON ── */
     .predict-btn {
       width: 100%;
-      margin-top: 24px;
-      padding: 14px;
-      background: linear-gradient(135deg, #4f8ef7, #a855f7);
+      margin-top: 8px;
+      padding: 13px;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
       border: none;
-      border-radius: 10px;
+      border-radius: var(--radius-sm);
       color: #fff;
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 600;
       cursor: pointer;
       transition: opacity 0.2s, transform 0.1s;
       font-family: inherit;
+      letter-spacing: 0.3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
     }
 
-    .predict-btn:hover { opacity: 0.9; }
-    .predict-btn:active { transform: scale(0.98); }
-    .predict-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .predict-btn:hover:not(:disabled) { opacity: 0.88; }
+    .predict-btn:active:not(:disabled) { transform: scale(0.99); }
+    .predict-btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
-    /* Results panel */
-    .results-panel { display: flex; flex-direction: column; gap: 20px; }
+    /* ── RIGHT PANEL ── */
+    .right-panel { display: flex; flex-direction: column; gap: 20px; }
 
-    .result-card {
-      background: #1a1d27;
-      border: 1px solid #2a2d3e;
-      border-radius: 16px;
-      padding: 24px;
-    }
-
-    .result-card h2 {
-      font-size: 16px;
-      font-weight: 600;
-      color: #ffffff;
-      margin-bottom: 20px;
-      padding-bottom: 14px;
-      border-bottom: 1px solid #2a2d3e;
-    }
-
+    /* ── RESULT STATES ── */
     .placeholder {
       text-align: center;
-      padding: 40px 20px;
-      color: #444;
+      padding: 48px 20px;
     }
 
-    .placeholder .icon { font-size: 40px; margin-bottom: 12px; }
-    .placeholder p { font-size: 13px; line-height: 1.6; }
-
-    .risk-badge {
-      display: inline-block;
-      padding: 6px 16px;
-      border-radius: 20px;
-      font-size: 13px;
-      font-weight: 600;
-      margin-bottom: 20px;
+    .placeholder-icon {
+      width: 56px; height: 56px;
+      background: rgba(79,142,247,0.08);
+      border: 1px solid rgba(79,142,247,0.15);
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+      margin: 0 auto 16px;
     }
 
-    .risk-high   { background: rgba(239,68,68,0.15);  color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
-    .risk-medium { background: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
-    .risk-low    { background: rgba(34,197,94,0.15);  color: #22c55e; border: 1px solid rgba(34,197,94,0.3); }
-
-    .prob-display {
-      text-align: center;
-      margin: 16px 0;
+    .placeholder h3 {
+      font-size: 14px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      margin-bottom: 6px;
     }
 
-    .prob-number {
-      font-size: 52px;
-      font-weight: 700;
-      line-height: 1;
-    }
-
-    .prob-high   { color: #ef4444; }
-    .prob-medium { color: #f59e0b; }
-    .prob-low    { color: #22c55e; }
-
-    .prob-label {
+    .placeholder p {
       font-size: 12px;
-      color: #666;
-      margin-top: 4px;
-    }
-
-    .prob-bar-wrap {
-      background: #0f1117;
-      border-radius: 8px;
-      height: 8px;
-      margin: 16px 0;
-      overflow: hidden;
-    }
-
-    .prob-bar {
-      height: 100%;
-      border-radius: 8px;
-      transition: width 0.8s ease;
-    }
-
-    .bar-high   { background: linear-gradient(90deg, #f59e0b, #ef4444); }
-    .bar-medium { background: linear-gradient(90deg, #22c55e, #f59e0b); }
-    .bar-low    { background: linear-gradient(90deg, #4f8ef7, #22c55e); }
-
-    .message-box {
-      background: #0f1117;
-      border-radius: 10px;
-      padding: 14px 16px;
-      font-size: 13px;
-      color: #ccc;
+      color: var(--text-muted);
       line-height: 1.6;
-      margin-top: 8px;
     }
 
-    .insights-card {
-      background: #1a1d27;
-      border: 1px solid #2a2d3e;
-      border-radius: 16px;
-      padding: 24px;
-    }
-
-    .insights-card h3 {
-      font-size: 14px;
-      font-weight: 600;
-      color: #ffffff;
-      margin-bottom: 16px;
-    }
-
-    .insight-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      padding: 10px 0;
-      border-bottom: 1px solid #1e2130;
-      font-size: 13px;
-      color: #aaa;
-      line-height: 1.5;
-    }
-
-    .insight-item:last-child { border-bottom: none; }
-    .insight-dot { width: 6px; height: 6px; border-radius: 50%; margin-top: 6px; flex-shrink: 0; }
-    .dot-red    { background: #ef4444; }
-    .dot-yellow { background: #f59e0b; }
-    .dot-green  { background: #22c55e; }
-    .dot-blue   { background: #4f8ef7; }
-
-    .loading {
+    /* ── LOADING ── */
+    .loading-state {
       text-align: center;
-      padding: 40px;
-      color: #666;
-      font-size: 14px;
+      padding: 48px 20px;
     }
 
-    .spinner {
-      width: 32px; height: 32px;
-      border: 3px solid #2a2d3e;
-      border-top-color: #4f8ef7;
+    .spinner-ring {
+      width: 40px; height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent-blue);
       border-radius: 50%;
-      animation: spin 0.8s linear infinite;
+      animation: spin 0.75s linear infinite;
       margin: 0 auto 16px;
     }
 
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    .loading-state p {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .loading-state .loading-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      opacity: 0.6;
+    }
+
+    /* ── RESULT DISPLAY ── */
+    .result-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .risk-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+
+    .risk-badge::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .badge-high   { background: var(--high-bg);   color: var(--high);   border: 1px solid var(--high-border); }
+    .badge-medium { background: var(--medium-bg); color: var(--medium); border: 1px solid var(--medium-border); }
+    .badge-low    { background: var(--low-bg);    color: var(--low);    border: 1px solid var(--low-border); }
+
+    .result-timestamp {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* ── PROBABILITY GAUGE ── */
+    .gauge-wrap {
+      text-align: center;
+      margin: 8px 0 20px;
+    }
+
+    .gauge-number {
+      font-size: 58px;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -2px;
+    }
+
+    .gauge-high   { color: var(--high); }
+    .gauge-medium { color: var(--medium); }
+    .gauge-low    { color: var(--low); }
+
+    .gauge-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .progress-track {
+      background: rgba(255,255,255,0.04);
+      border-radius: 6px;
+      height: 6px;
+      margin: 16px 0;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 6px;
+      transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .fill-high   { background: linear-gradient(90deg, #f59e0b, var(--high)); }
+    .fill-medium { background: linear-gradient(90deg, var(--low), var(--medium)); }
+    .fill-low    { background: linear-gradient(90deg, var(--accent-blue), var(--low)); }
+
+    /* ── STATS ROW ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .stat-box {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .stat-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    /* ── RECOMMENDATION ── */
+    .recommendation {
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .rec-high   { background: var(--high-bg);   border: 1px solid var(--high-border);   color: #fca5a5; }
+    .rec-medium { background: var(--medium-bg); border: 1px solid var(--medium-border); color: #fcd34d; }
+    .rec-low    { background: var(--low-bg);    border: 1px solid var(--low-border);    color: #86efac; }
+
+    .rec-title {
+      font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 6px;
+      opacity: 0.8;
+    }
+
+    /* ── ERROR STATE ── */
+    .error-state {
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .error-icon {
+      width: 48px; height: 48px;
+      background: var(--high-bg);
+      border: 1px solid var(--high-border);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+      margin: 0 auto 14px;
+    }
+
+    .error-state h3 { font-size: 14px; color: var(--high); margin-bottom: 6px; }
+    .error-state p  { font-size: 12px; color: var(--text-muted); line-height: 1.6; }
+
+    .retry-btn {
+      margin-top: 14px;
+      padding: 8px 20px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .retry-btn:hover { border-color: var(--accent-blue); color: var(--accent-blue); }
+
+    /* ── INSIGHTS CARD ── */
+    .insights-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px;
+    }
+
+    .insights-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .insight-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+    }
+
+    .insight-row:last-child { border-bottom: none; padding-bottom: 0; }
+
+    .insight-rank {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .rank-1 { background: rgba(239,68,68,0.15);  color: var(--high); }
+    .rank-2 { background: rgba(245,158,11,0.15); color: var(--medium); }
+    .rank-3 { background: rgba(79,142,247,0.15); color: var(--accent-blue); }
+    .rank-4 { background: rgba(168,85,247,0.15); color: var(--accent-purple); }
+    .rank-5 { background: rgba(34,197,94,0.15);  color: var(--low); }
+
+    .insight-text { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+    .insight-text strong { color: var(--text-primary); font-weight: 600; }
+
+    /* ── MODEL CARD ── */
+    .model-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px 22px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .model-stat { text-align: center; }
+    .model-stat-value { font-size: 20px; font-weight: 700; color: var(--accent-blue); }
+    .model-stat-label { font-size: 10px; color: var(--text-muted); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.8px; }
+
+    /* ── RESPONSIVE ── */
     @media (max-width: 900px) {
       .container { grid-template-columns: 1fr; }
       .grid-3 { grid-template-columns: 1fr 1fr; }
+      header { padding: 0 20px; }
+    }
+
+    @media (max-width: 500px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
 
+<!-- HEADER -->
 <header>
-  <div class="logo">📊</div>
-  <div>
-    <h1>Customer Churn Predictor</h1>
-    <p>XGBoost ML Model — Telecom Customer Risk Analysis</p>
+  <div class="header-left">
+    <div class="logo">📊</div>
+    <div>
+      <div class="header-title">Churn Predictor</div>
+      <div class="header-sub">XGBoost · Telecom Risk Analysis</div>
+    </div>
+  </div>
+  <div class="status-pill">
+    <div class="status-dot"></div>
+    Model Online
   </div>
 </header>
 
+<!-- MAIN -->
 <div class="container">
 
-  <!-- LEFT: Form -->
+  <!-- LEFT: FORM -->
   <div class="card">
-    <h2>Customer Details</h2>
-
-    <div class="section-label">Personal Information</div>
-    <div class="grid-3">
-      <div class="field">
-        <label>Gender</label>
-        <select id="gender">
-          <option value="0">Female</option>
-          <option value="1">Male</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Senior Citizen</label>
-        <select id="SeniorCitizen">
-          <option value="0">No</option>
-          <option value="1">Yes</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Partner</label>
-        <select id="Partner">
-          <option value="0">No</option>
-          <option value="1">Yes</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Dependents</label>
-        <select id="Dependents">
-          <option value="0">No</option>
-          <option value="1">Yes</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Tenure (months)</label>
-        <input type="number" id="tenure" value="12" min="0" max="72"/>
-      </div>
+    <div class="card-title">
+      Customer Profile
+      <span>Fill all fields for accurate prediction</span>
     </div>
 
-    <div class="section-label">Phone Services</div>
-    <div class="grid-2">
-      <div class="field">
-        <label>Phone Service</label>
-        <select id="PhoneService">
-          <option value="0">No</option>
-          <option value="1">Yes</option>
-        </select>
+    <!-- Personal -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-label">Personal</div>
+        <div class="section-line"></div>
       </div>
-      <div class="field">
-        <label>Multiple Lines</label>
-        <select id="MultipleLines">
-          <option value="0">No</option>
-          <option value="1">Yes</option>
-          <option value="2">No Phone Service</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="section-label">Internet Services</div>
-    <div class="grid-2">
-      <div class="field">
-        <label>Internet Service</label>
-        <select id="InternetService">
-          <option value="0">DSL</option>
-          <option value="1">Fiber Optic</option>
-          <option value="2">No</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Online Security</label>
-        <select id="OnlineSecurity">
-          <option value="0">No</option>
-          <option value="1">Yes</option>
-          <option value="2">No Internet</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Online Backup</label>
-        <select id="OnlineBackup">
-          <option value="0">No</option>
-          <option value="1">Yes</option>
-          <option value="2">No Internet</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Device Protection</label>
-        <select id="DeviceProtection">
-          <option value="0">No</option>
-          <option value="1">Yes</option>
-          <option value="2">No Internet</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Tech Support</label>
-        <select id="TechSupport">
-          <option value="0">No</option>
-          <option value="1">Yes</option>
-          <option value="2">No Internet</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Streaming TV</label>
-        <select id="StreamingTV">
-          <option value="0">No</option>
-          <option value="1">Yes</option>
-          <option value="2">No Internet</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Streaming Movies</label>
-        <select id="StreamingMovies">
-          <option value="0">No</option>
-          <option value="1">Yes</option>
-          <option value="2">No Internet</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="section-label">Billing & Contract</div>
-    <div class="grid-2">
-      <div class="field">
-        <label>Contract Type</label>
-        <select id="Contract">
-          <option value="0">Month-to-Month</option>
-          <option value="1">One Year</option>
-          <option value="2">Two Year</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Paperless Billing</label>
-        <select id="PaperlessBilling">
-          <option value="0">No</option>
-          <option value="1">Yes</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Payment Method</label>
-        <select id="PaymentMethod">
-          <option value="0">Bank Transfer</option>
-          <option value="1">Credit Card</option>
-          <option value="2">Electronic Check</option>
-          <option value="3">Mailed Check</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Monthly Charges ($)</label>
-        <input type="number" id="MonthlyCharges" value="65.00" min="0" step="0.01"/>
-      </div>
-      <div class="field">
-        <label>Total Charges ($)</label>
-        <input type="number" id="TotalCharges" value="780.00" min="0" step="0.01"/>
-      </div>
-    </div>
-
-    <button class="predict-btn" onclick="predict()">
-      Predict Churn Risk
-    </button>
-  </div>
-
-  <!-- RIGHT: Results -->
-  <div class="results-panel">
-    <div class="result-card">
-      <h2>Prediction Result</h2>
-      <div id="result-content">
-        <div class="placeholder">
-          <div class="icon">🎯</div>
-          <p>Fill in the customer details and click<br><strong>Predict Churn Risk</strong> to see results.</p>
+      <div class="grid-3">
+        <div class="field">
+          <label>Gender</label>
+          <select id="gender">
+            <option value="0">Female</option>
+            <option value="1">Male</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Senior Citizen</label>
+          <select id="SeniorCitizen">
+            <option value="0">No</option>
+            <option value="1">Yes</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Has Partner</label>
+          <select id="Partner">
+            <option value="0">No</option>
+            <option value="1">Yes</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Has Dependents</label>
+          <select id="Dependents">
+            <option value="0">No</option>
+            <option value="1">Yes</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Tenure (months) <span class="required">*</span></label>
+          <input type="number" id="tenure" value="12" min="0" max="72" placeholder="0–72"/>
+          <div class="field-error" id="tenure-error">⚠ Enter a value between 0 and 72</div>
         </div>
       </div>
     </div>
 
-    <div class="insights-card">
-      <h3>Key Churn Drivers</h3>
-      <div class="insight-item">
-        <div class="insight-dot dot-red"></div>
-        <span><strong>Contract type</strong> — Month-to-month customers churn 3x more than annual contracts</span>
+    <!-- Phone -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-label">Phone Services</div>
+        <div class="section-line"></div>
       </div>
-      <div class="insight-item">
-        <div class="insight-dot dot-yellow"></div>
-        <span><strong>Monthly charges</strong> — Higher bills significantly increase churn probability</span>
-      </div>
-      <div class="insight-item">
-        <div class="insight-dot dot-green"></div>
-        <span><strong>Tenure</strong> — Customers stay past 12 months are much less likely to leave</span>
-      </div>
-      <div class="insight-item">
-        <div class="insight-dot dot-blue"></div>
-        <span><strong>Online security</strong> — Customers without security add-ons churn more frequently</span>
+      <div class="grid-2">
+        <div class="field">
+          <label>Phone Service</label>
+          <select id="PhoneService">
+            <option value="0">No</option>
+            <option value="1">Yes</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Multiple Lines</label>
+          <select id="MultipleLines">
+            <option value="0">No</option>
+            <option value="1">Yes</option>
+            <option value="2">No Phone Service</option>
+          </select>
+        </div>
       </div>
     </div>
+
+    <!-- Internet -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-label">Internet Services</div>
+        <div class="section-line"></div>
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label>Internet Service</label>
+          <select id="InternetService">
+            <option value="0">DSL</option>
+            <option value="1">Fiber Optic</option>
+            <option value="2">None</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Online Security</label>
+          <select id="OnlineSecurity">
+            <option value="0">No</option>
+            <option value="1">Yes</option>
+            <option value="2">No Internet</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Online Backup</label>
+          <select id="OnlineBackup">
+            <option value="0">No</option>
+            <option value="1">Yes</option>
+            <option value="2">No Internet</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Device Protection</label>
+          <select id="DeviceProtection">
+            <option value="0">No</option>
+            <option value="1">Yes</option>
+            <option value="2">No Internet</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Tech Support</label>
+          <select id="TechSupport">
+            <option value="0">No</option>
+            <option value="1">Yes</option>
+            <option value="2">No Internet</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Streaming TV</label>
+          <select id="StreamingTV">
+            <option value="0">No</option>
+            <option value="1">Yes</option>
+            <option value="2">No Internet</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Streaming Movies</label>
+          <select id="StreamingMovies">
+            <option value="0">No</option>
+            <option value="1">Yes</option>
+            <option value="2">No Internet</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Billing -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-label">Billing & Contract</div>
+        <div class="section-line"></div>
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label>Contract Type</label>
+          <select id="Contract">
+            <option value="0">Month-to-Month</option>
+            <option value="1">One Year</option>
+            <option value="2">Two Year</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Paperless Billing</label>
+          <select id="PaperlessBilling">
+            <option value="0">No</option>
+            <option value="1">Yes</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Payment Method</label>
+          <select id="PaymentMethod">
+            <option value="0">Bank Transfer</option>
+            <option value="1">Credit Card</option>
+            <option value="2">Electronic Check</option>
+            <option value="3">Mailed Check</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Monthly Charges ($) <span class="required">*</span></label>
+          <input type="number" id="MonthlyCharges" value="65.00" min="0" max="999" step="0.01" placeholder="e.g. 65.00"/>
+          <div class="field-error" id="monthly-error">⚠ Enter a valid monthly charge</div>
+        </div>
+        <div class="field">
+          <label>Total Charges ($) <span class="required">*</span></label>
+          <input type="number" id="TotalCharges" value="780.00" min="0" step="0.01" placeholder="e.g. 780.00"/>
+          <div class="field-error" id="total-error">⚠ Enter a valid total charge</div>
+        </div>
+      </div>
+    </div>
+
+    <button class="predict-btn" id="predict-btn" onclick="predict()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      Predict Churn Risk
+    </button>
   </div>
 
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+
+    <!-- Result card -->
+    <div class="card" id="result-card">
+      <div class="card-title">Prediction Result</div>
+      <div id="result-content">
+        <div class="placeholder">
+          <div class="placeholder-icon">🎯</div>
+          <h3>Ready to analyse</h3>
+          <p>Complete the customer profile on the left and click Predict Churn Risk to see the result.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Model stats -->
+    <div class="model-card">
+      <div class="model-stat">
+        <div class="model-stat-value">0.84</div>
+        <div class="model-stat-label">AUC-ROC Score</div>
+      </div>
+      <div class="model-stat">
+        <div class="model-stat-value">±0.01</div>
+        <div class="model-stat-label">Std Deviation</div>
+      </div>
+      <div class="model-stat">
+        <div class="model-stat-value">7,043</div>
+        <div class="model-stat-label">Training Records</div>
+      </div>
+      <div class="model-stat">
+        <div class="model-stat-value">19</div>
+        <div class="model-stat-label">Features Used</div>
+      </div>
+    </div>
+
+    <!-- Insights -->
+    <div class="insights-card">
+      <div class="insights-title">
+        📈 Top Churn Drivers
+      </div>
+      <div class="insight-row">
+        <div class="insight-rank rank-1">1</div>
+        <div class="insight-text"><strong>Monthly Charges</strong> — Higher bills strongly predict churn. Price sensitivity is the #1 driver.</div>
+      </div>
+      <div class="insight-row">
+        <div class="insight-rank rank-2">2</div>
+        <div class="insight-text"><strong>Contract Type</strong> — Month-to-month customers churn 3× more than annual contracts.</div>
+      </div>
+      <div class="insight-row">
+        <div class="insight-rank rank-3">3</div>
+        <div class="insight-text"><strong>Tenure</strong> — Customers past 12 months are significantly less likely to leave.</div>
+      </div>
+      <div class="insight-row">
+        <div class="insight-rank rank-4">4</div>
+        <div class="insight-text"><strong>Internet Service</strong> — Fiber optic users churn more despite paying premium prices.</div>
+      </div>
+      <div class="insight-row">
+        <div class="insight-rank rank-5">5</div>
+        <div class="insight-text"><strong>Online Security</strong> — Customers without security add-ons churn at higher rates.</div>
+      </div>
+    </div>
+
+  </div>
 </div>
 
 <script>
+  function validate() {
+    let valid = true;
+
+    const tenure = parseInt(document.getElementById('tenure').value);
+    const tenureEl = document.getElementById('tenure');
+    const tenureErr = document.getElementById('tenure-error');
+    if (isNaN(tenure) || tenure < 0 || tenure > 72) {
+      tenureEl.classList.add('error');
+      tenureErr.classList.add('visible');
+      valid = false;
+    } else {
+      tenureEl.classList.remove('error');
+      tenureErr.classList.remove('visible');
+    }
+
+    const monthly = parseFloat(document.getElementById('MonthlyCharges').value);
+    const monthlyEl = document.getElementById('MonthlyCharges');
+    const monthlyErr = document.getElementById('monthly-error');
+    if (isNaN(monthly) || monthly < 0) {
+      monthlyEl.classList.add('error');
+      monthlyErr.classList.add('visible');
+      valid = false;
+    } else {
+      monthlyEl.classList.remove('error');
+      monthlyErr.classList.remove('visible');
+    }
+
+    const total = parseFloat(document.getElementById('TotalCharges').value);
+    const totalEl = document.getElementById('TotalCharges');
+    const totalErr = document.getElementById('total-error');
+    if (isNaN(total) || total < 0) {
+      totalEl.classList.add('error');
+      totalErr.classList.add('visible');
+      valid = false;
+    } else {
+      totalEl.classList.remove('error');
+      totalErr.classList.remove('visible');
+    }
+
+    return valid;
+  }
+
   async function predict() {
-    const btn = document.querySelector('.predict-btn');
+    if (!validate()) return;
+
+    const btn = document.getElementById('predict-btn');
     btn.disabled = true;
-    btn.textContent = 'Analysing...';
+    btn.innerHTML = `<div class="spinner-ring" style="width:18px;height:18px;border-width:2px;margin:0"></div> Analysing...`;
 
     document.getElementById('result-content').innerHTML = `
-      <div class="loading">
-        <div class="spinner"></div>
-        Running prediction...
+      <div class="loading-state">
+        <div class="spinner-ring"></div>
+        <p>Running XGBoost model</p>
+        <p class="loading-sub">Processing 19 features...</p>
       </div>`;
 
     const payload = {
@@ -520,44 +897,69 @@
         body: JSON.stringify(payload)
       });
 
+      if (!response.ok) throw new Error(`API error ${response.status}`);
+
       const data = await response.json();
       showResult(data);
+
     } catch (err) {
       document.getElementById('result-content').innerHTML = `
-        <div class="placeholder">
-          <div class="icon">⚠️</div>
-          <p>Connection error. Make sure the API is running.</p>
+        <div class="error-state">
+          <div class="error-icon">⚠️</div>
+          <h3>Connection Failed</h3>
+          <p>Could not reach the prediction API.<br>Please check your connection and try again.</p>
+          <button class="retry-btn" onclick="predict()">Try Again</button>
         </div>`;
     }
 
     btn.disabled = false;
-    btn.textContent = 'Predict Churn Risk';
+    btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> Predict Churn Risk`;
   }
 
   function showResult(data) {
-    const prob = data.churn_probability;
+    const prob    = data.churn_probability;
     const segment = data.risk_segment;
+    const tier    = segment === 'High Risk' ? 'high' : segment === 'Medium Risk' ? 'medium' : 'low';
 
-    const riskClass = segment === 'High Risk' ? 'high' :
-                      segment === 'Medium Risk' ? 'medium' : 'low';
+    const recommendations = {
+      high:   { title: 'Immediate Action Required', text: 'Contact this customer within 24 hours with a personalised retention offer — loyalty discount, contract upgrade, or free service upgrade.' },
+      medium: { title: 'Proactive Outreach Advised', text: 'Schedule a check-in within 30 days. A small loyalty reward or service improvement conversation can prevent this customer from leaving.' },
+      low:    { title: 'Standard Engagement', text: 'Customer appears satisfied. Maintain regular communication and monitor for any changes in usage patterns or billing.' }
+    };
 
-    const recommendation = segment === 'High Risk'
-      ? 'Immediate action required. Contact this customer with a personalised retention offer — discount, contract upgrade, or service improvement.'
-      : segment === 'Medium Risk'
-      ? 'Monitor closely. Consider a proactive outreach with a loyalty reward or service check-in within the next 30 days.'
-      : 'Low priority. Customer appears satisfied. Standard engagement is sufficient.';
+    const rec = recommendations[tier];
+    const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const retention = (100 - prob).toFixed(1);
 
     document.getElementById('result-content').innerHTML = `
-      <span class="risk-badge risk-${riskClass}">${segment}</span>
-      <div class="prob-display">
-        <div class="prob-number prob-${riskClass}">${prob.toFixed(1)}%</div>
-        <div class="prob-label">Churn Probability</div>
+      <div class="result-header">
+        <span class="risk-badge badge-${tier}">${segment}</span>
+        <span class="result-timestamp">Predicted at ${now}</span>
       </div>
-      <div class="prob-bar-wrap">
-        <div class="prob-bar bar-${riskClass}" style="width: ${prob}%"></div>
+
+      <div class="gauge-wrap">
+        <div class="gauge-number gauge-${tier}">${prob.toFixed(1)}%</div>
+        <div class="gauge-label">Churn Probability</div>
       </div>
-      <div class="message-box">
-        <strong>Recommendation:</strong> ${recommendation}
+
+      <div class="progress-track">
+        <div class="progress-fill fill-${tier}" style="width: ${prob}%"></div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-box">
+          <div class="stat-value">${prob.toFixed(1)}%</div>
+          <div class="stat-label">Churn Risk</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value">${retention}%</div>
+          <div class="stat-label">Retention Chance</div>
+        </div>
+      </div>
+
+      <div class="recommendation rec-${tier}">
+        <div class="rec-title">${rec.title}</div>
+        ${rec.text}
       </div>`;
   }
 </script>
