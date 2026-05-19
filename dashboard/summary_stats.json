@@ -1,0 +1,10 @@
+{
+  "Total Customers": 7043,
+  "Predicted Churners": 2029,
+  "Churn Rate (%)": 28.8,
+  "High Risk Customers": 1605,
+  "Avg Monthly Charge (Churners)": 73.76,
+  "Avg Monthly Charge (Retained)": 61.12,
+  "Avg Tenure (Churners)": 12.9,
+  "Avg Tenure (Retained)": 40.2
+}

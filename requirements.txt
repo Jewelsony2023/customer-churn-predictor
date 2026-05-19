@@ -1,0 +1,13 @@
+fastapi==0.136.1
+uvicorn==0.47.0
+pydantic==2.13.4
+xgboost
+scikit-learn
+pandas
+numpy
+shap
+matplotlib
+seaborn
+imbalanced-learn
+joblib
+openpyxl
