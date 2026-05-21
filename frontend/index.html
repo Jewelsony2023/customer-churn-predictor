@@ -427,6 +427,78 @@
       opacity: 0.8;
     }
 
+    /* RESULT POPUP */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(3, 6, 18, 0.76);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      z-index: 1000;
+    }
+
+    .modal-overlay.visible {
+      display: flex;
+    }
+
+    .prediction-modal {
+      width: min(440px, 100%);
+      max-height: calc(100vh - 48px);
+      overflow-y: auto;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+      padding: 24px;
+      animation: modalIn 0.18s ease-out;
+    }
+
+    @keyframes modalIn {
+      from { opacity: 0; transform: translateY(12px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .modal-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .modal-close {
+      width: 32px;
+      height: 32px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 20px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+    }
+
+    .modal-close:hover {
+      border-color: var(--accent-blue);
+      color: var(--text-primary);
+      background: rgba(79,142,247,0.08);
+    }
+
     /* ── ERROR STATE ── */
     .error-state {
       text-align: center;
@@ -811,6 +883,16 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="result-modal" aria-hidden="true" onclick="handleModalBackdrop(event)">
+  <div class="prediction-modal" role="dialog" aria-modal="true" aria-labelledby="result-modal-title">
+    <div class="modal-top">
+      <div class="modal-title" id="result-modal-title">Prediction Result</div>
+      <button class="modal-close" type="button" onclick="closeResultModal()" aria-label="Close prediction result">&times;</button>
+    </div>
+    <div id="modal-result-content"></div>
+  </div>
+</div>
+
 <script>
   function validate() {
     let valid = true;
@@ -931,7 +1013,7 @@
     const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const retention = (100 - prob).toFixed(1);
 
-    document.getElementById('result-content').innerHTML = `
+    const resultHtml = `
       <div class="result-header">
         <span class="risk-badge badge-${tier}">${segment}</span>
         <span class="result-timestamp">Predicted at ${now}</span>
@@ -961,7 +1043,35 @@
         <div class="rec-title">${rec.title}</div>
         ${rec.text}
       </div>`;
+
+    document.getElementById('result-content').innerHTML = resultHtml;
+    document.getElementById('modal-result-content').innerHTML = resultHtml;
+    openResultModal();
   }
+
+  function openResultModal() {
+    const modal = document.getElementById('result-modal');
+    modal.classList.add('visible');
+    modal.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeResultModal() {
+    const modal = document.getElementById('result-modal');
+    modal.classList.remove('visible');
+    modal.setAttribute('aria-hidden', 'true');
+  }
+
+  function handleModalBackdrop(event) {
+    if (event.target.id === 'result-modal') {
+      closeResultModal();
+    }
+  }
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      closeResultModal();
+    }
+  });
 </script>
 
 </body>
